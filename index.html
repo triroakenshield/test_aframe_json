@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, WebVR! • A-Frame</title>
+    <meta name="description" content="Hello, WebVR! • A-Frame">
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+	<script src="test3.js"></script>	
+  </head>
+  <body>
+    <a-scene id="model" background="color: #ECECEC">
+      <a-plane position="0 -2 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" shadow></a-plane>
+    </a-scene>
+  <script type="text/javascript">
+  		function ConvertClr(clr) {
+	        var bytes = [];
+
+	        bytes[0] = (clr >>> 24) & 0xFF; //R
+	        bytes[1] = (clr >>> 16) & 0xFF; //G
+	        bytes[2] = (clr >>> 8) & 0xFF;  //B
+	        bytes[3] = (clr >>> 0) & 0xFF;  //A
+
+	        return bytes[2] | (bytes[1] << 8) | (bytes[0] << 16);
+	    }
+  AFRAME.registerGeometry('example', {
+  schema: {
+	FacetCount: {default: 1, min: 0, type: 'int'},
+	VertexCount: {default: 1, min: 0, type: 'int'},
+	VertexCoords: {default: [0]}, 
+	VertexIndices: {default: [0]}, 
+	Normals: {default: [0]},
+	NormalIndices: {default: [0]}, 
+	Center: {default: [0, 0, 0]}, 
+	Color: {default: [0]}, 
+	Id: {default: ""}},
+  init: function (meshData) {  
+	            var geometry = new THREE.Geometry();
+	            var vertexArray = [];
+	            //uncompress vertices array
+	            for (var i = 0; i < meshData.VertexIndices.length; i += 1) {
+	                var idx = 3 * meshData.VertexIndices[i];
+	                vertexArray[i] = new THREE.Vector3(
+                        meshData.VertexCoords[idx],
+                        meshData.VertexCoords[idx + 2],
+                        meshData.VertexCoords[idx + 1]);
+	            }
+			
+	            var normalArray = [];
+
+	            //uncompress normals array
+	            for (var i = 0; i < meshData.NormalIndices.length; i += 1) {
+	                var idx = 3 * meshData.NormalIndices[i];
+	                normalArray[i] = new THREE.Vector3(
+                        meshData.Normals[idx],
+                        meshData.Normals[idx + 2],
+                        meshData.Normals[idx + 1]);
+	            }
+
+	            //Generate Faces
+	            for (var i = 0; i < vertexArray.length; i += 3) {
+	                geometry.vertices.push(vertexArray[i]);
+	                geometry.vertices.push(vertexArray[i + 1]);
+	                geometry.vertices.push(vertexArray[i + 2]);
+	                var face = new THREE.Face3(i, i + 1, i + 2)
+	                face.vertexNormals.push(normalArray[i]);
+	                face.vertexNormals.push(normalArray[i + 1]);
+	                face.vertexNormals.push(normalArray[i + 2]);
+					geometry.faces.push(face);
+	            }
+				geometry.computeBoundingBox();
+	            this.geometry = geometry;
+  }});
+  
+	 var elem = document.getElementById('model');
+	 var len = DATA.length;
+	 for (var meshIdx = 0; meshIdx < len; meshIdx++) {
+		var meshData = DATA[meshIdx]; 
+		var ent1 = document.createElement('a-entity');
+		meshData.primitive="example";
+		ent1.setAttribute("geometry", meshData); 
+		ent1.setAttribute("position", {x: -5, y: -2, z: -14}); 
+		elem.appendChild(ent1);	
+				} 
+  </script>	
+  </body>
+</html>
